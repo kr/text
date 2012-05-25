@@ -13,7 +13,7 @@ func TestWrap(t *testing.T) {
 		{[]byte("jumps"), []byte("over"), []byte("the"), []byte("lazy"), []byte("dog.")},
 	}
 	words := bytes.Split([]byte(text), sp)
-	got := WrapWords(words, 24)
+	got := WrapWords(words, 1, 24, defaultPenalty)
 	if len(exp) != len(got) {
 		t.Fail()
 	}

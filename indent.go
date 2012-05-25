@@ -1,6 +1,7 @@
 package text
 
-// Indent calls IndentBytes and returns the result.
+// Indent inserts prefix at the beginning of each non-empty line of s. The
+// end-of-line marker is NL.
 func Indent(s, prefix string) string {
 	return string(IndentBytes([]byte(s), []byte(prefix)))
 }
