@@ -8,9 +8,9 @@ import (
 var text = "The quick brown fox jumps over the lazy dog."
 
 func TestWrap(t *testing.T) {
-	exp := [][][]byte{
-		{[]byte("The"), []byte("quick"), []byte("brown"), []byte("fox")},
-		{[]byte("jumps"), []byte("over"), []byte("the"), []byte("lazy"), []byte("dog.")},
+	exp := [][]string{
+		{"The", "quick", "brown", "fox"},
+		{"jumps", "over", "the", "lazy", "dog."},
 	}
 	words := bytes.Split([]byte(text), sp)
 	got := WrapWords(words, 1, 24, defaultPenalty)
@@ -22,7 +22,7 @@ func TestWrap(t *testing.T) {
 			t.Fail()
 		}
 		for j := range exp[i] {
-			if string(exp[i][j]) != string(got[i][j]) {
+			if exp[i][j] != string(got[i][j]) {
 				t.Fatal(i, exp[i][j], got[i][j])
 			}
 		}
