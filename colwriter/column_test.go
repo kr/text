@@ -60,6 +60,15 @@ env.go     hkdist     main.go    scale.go   term       version.go
 git.go     linux.go   plugin.go  ssh.go     unix.go    windows.go
 help.go    ls.go      run.go     tail.go    update.go
 `[1:]},
+	{20, 0, `
+Hello
+Γειά σου
+안녕
+今日は
+`[1:], `
+Hello    안녕
+Γειά σου 今日は
+`[1:]},
 }
 
 func TestWriter(t *testing.T) {

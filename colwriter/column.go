@@ -8,6 +8,7 @@ package colwriter
 import (
 	"bytes"
 	"io"
+	"unicode/utf8"
 )
 
 const (
@@ -107,8 +108,8 @@ func (w *Writer) columnate() error {
 	}
 	maxwidth := 0
 	for _, wd := range words {
-		if len(wd) > maxwidth {
-			maxwidth = len(wd)
+		if n := utf8.RuneCount(wd); n > maxwidth {
+			maxwidth = n
 		}
 	}
 	maxwidth++ // space char
@@ -126,7 +127,7 @@ func (w *Writer) columnate() error {
 			if err != nil {
 				return err
 			}
-			col += len(words[j])
+			col += utf8.RuneCount(words[j])
 			if j+nlines < len(words) {
 				for col < endcol {
 					_, err := w.w.Write([]byte{' '})
