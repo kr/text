@@ -5,7 +5,7 @@ import (
 	"testing"
 )
 
-var s = `
+var src = `
 .git
 .gitignore
 .godir
@@ -36,14 +36,20 @@ version.go
 windows.go
 `[1:]
 
-var de = `
+var tests = []struct{
+	wid  int
+	flag uint
+	src  string
+	want string
+}{
+	{80, 0, "", ""},
+	{80, 0, src, `
 .git       README.md  darwin.go  git.go     ls.go      scale.go   unix.go
 .gitignore api.go     data.go    help.go    main.go    ssh.go     update.go
 .godir     apps.go    dyno.go:   hkdist     plugin.go  tail.go    version.go
 Procfile:  auth.go    env.go     linux.go   run.go     term       windows.go
-`[1:]
-
-var ce = `
+`[1:]},
+	{80, BreakOnColon, src, `
 .git       .gitignore .godir
 
 Procfile:
@@ -53,49 +59,23 @@ dyno.go:
 env.go     hkdist     main.go    scale.go   term       version.go
 git.go     linux.go   plugin.go  ssh.go     unix.go    windows.go
 help.go    ls.go      run.go     tail.go    update.go
-`[1:]
-
-func TestColumns(t *testing.T) {
-	b := new(bytes.Buffer)
-	w := NewWriter(b, 80, 0)
-	if _, err := w.Write([]byte(s)); err != nil {
-		t.Error(err)
-	}
-	if err := w.Flush(); err != nil {
-		t.Error(err)
-	}
-	g := string(b.Bytes())
-	if de != g {
-		t.Log("\n" + de)
-		t.Log("\n" + g)
-		t.Errorf("%q != %q", de, g)
-	}
+`[1:]},
 }
 
-func TestColumnsColon(t *testing.T) {
-	b := new(bytes.Buffer)
-	w := NewWriter(b, 80, BreakOnColon)
-	if _, err := w.Write([]byte(s)); err != nil {
-		t.Error(err)
-	}
-	if err := w.Flush(); err != nil {
-		t.Error(err)
-	}
-	g := string(b.Bytes())
-	if ce != g {
-		t.Log("\n" + ce)
-		t.Log("\n" + g)
-		t.Errorf("%q != %q", ce, g)
-	}
-}
-
-func TestColWriterFlushEmpty(t *testing.T) {
-	b := new(bytes.Buffer)
-	w := NewWriter(b, 80, 0)
-	if err := w.Flush(); err != nil {
-		t.Error(err)
-	}
-	if g := b.Bytes(); len(g) != 0 {
-		t.Errorf("expected empty output, got %#v", g)
+func TestWriter(t *testing.T) {
+	for _, test := range tests {
+		b := new(bytes.Buffer)
+		w := NewWriter(b, test.wid, test.flag)
+		if _, err := w.Write([]byte(test.src)); err != nil {
+			t.Error(err)
+		}
+		if err := w.Flush(); err != nil {
+			t.Error(err)
+		}
+		if g := b.String(); test.want != g {
+			t.Log("\n" + test.want)
+			t.Log("\n" + g)
+			t.Errorf("%q != %q", test.want, g)
+		}
 	}
 }
