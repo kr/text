@@ -42,6 +42,7 @@ func main() {
 		for _, s := range args {
 			if f, err := os.Open(s); err == nil {
 				copyin(w, f)
+				f.Close()
 			} else {
 				log.Println(err)
 			}
