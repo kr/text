@@ -31,6 +31,7 @@ type indentWriter struct {
 	bol bool
 	pre [][]byte
 	sel int
+	off int
 }
 
 // NewIndentWriter makes a new write filter that indents the input
@@ -49,7 +50,10 @@ func NewIndentWriter(w io.Writer, pre ...[]byte) io.Writer {
 func (w *indentWriter) Write(p []byte) (n int, err error) {
 	for _, c := range p {
 		if w.bol {
-			if _, err = w.w.Write(w.pre[w.sel]); err != nil {
+			var i int
+			i, err = w.w.Write(w.pre[w.sel][w.off:])
+			w.off += i
+			if err != nil {
 				return n, err
 			}
 		}
@@ -59,8 +63,11 @@ func (w *indentWriter) Write(p []byte) (n int, err error) {
 		}
 		n++
 		w.bol = c == '\n'
-		if w.bol && w.sel < len(w.pre)-1 {
-			w.sel++
+		if w.bol {
+			w.off = 0
+			if w.sel < len(w.pre)-1 {
+				w.sel++
+			}
 		}
 	}
 	return n, nil
