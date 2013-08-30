@@ -1,0 +1,61 @@
+package text
+
+import (
+	"bytes"
+	"testing"
+)
+
+type Test struct {
+	n int
+	d string
+	w string
+}
+
+ts := []Test{
+	{9, `
+a b c d e f
+  - a b c d
+    e f
+a b c d e f
+`,
+	`
+a b c d e
+f
+  - a b c
+    d e f
+a b c d e
+f
+`},
+
+	{9, `
+a b c d e f
+> - a b c d
+>   e f
+a b c d e f
+`,
+	`
+a b c d e
+f
+> - a b c
+>   d e f
+a b c d e
+f
+`},
+
+	{9, `
+a b c d e f
+> - a b c d
+a b c d e f
+`,
+	`
+a b c d e
+f
+> - a b c
+>   d
+a b c d e
+f
+`},
+}
+
+func TestIndent(t *testing.T) {
+}
