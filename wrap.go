@@ -31,7 +31,7 @@ func WrapBytes(b []byte, lim int) []byte {
 
 // WrapWords is the low-level line-breaking algorithm, useful if you need more
 // control over the details of the text wrapping process. For most uses, either
-// Wrap or WrapBytes will be sufficient and more convenient. 
+// Wrap or WrapBytes will be sufficient and more convenient.
 //
 // WrapWords splits a list of words into lines with minimal "raggedness",
 // treating each byte as one unit, accounting for spc units between adjacent
@@ -81,6 +81,9 @@ func WrapWords(words [][]byte, spc, lim, pen int) [][][]byte {
 	for i < n {
 		lines = append(lines, words[i:nbrk[i]])
 		i = nbrk[i]
+		if i == 0 {
+			break
+		}
 	}
 	return lines
 }
