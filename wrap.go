@@ -81,6 +81,9 @@ func WrapWords(words [][]byte, spc, lim, pen int) [][][]byte {
 	for i < n {
 		lines = append(lines, words[i:nbrk[i]])
 		i = nbrk[i]
+		if i == 0 {
+			break
+		}
 	}
 	return lines
 }
