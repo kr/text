@@ -3,6 +3,8 @@ package text
 import (
 	"bytes"
 	"math"
+
+	"github.com/mattn/go-runewidth"
 )
 
 var (
@@ -40,15 +42,19 @@ func WrapBytes(b []byte, lim int) []byte {
 // difference of the length of the line and lim. Too-long lines (which only
 // happen when a single word is longer than lim units) have pen penalty units
 // added to the error.
+func wordLength(word []byte) int {
+	return runewidth.StringWidth(string(word))
+}
+
 func WrapWords(words [][]byte, spc, lim, pen int) [][][]byte {
 	n := len(words)
 
 	length := make([][]int, n)
 	for i := 0; i < n; i++ {
 		length[i] = make([]int, n)
-		length[i][i] = len(words[i])
+		length[i][i] = wordLength(words[i])
 		for j := i + 1; j < n; j++ {
-			length[i][j] = length[i][j-1] + spc + len(words[j])
+			length[i][j] = length[i][j-1] + spc + wordLength(words[j])
 		}
 	}
 
