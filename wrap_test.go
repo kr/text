@@ -60,3 +60,21 @@ func TestWrapBug1(t *testing.T) {
 		}
 	}
 }
+
+func TestWrapPr4(t *testing.T) {
+	cases := []struct {
+		limit int
+		text  string
+		want  string
+	}{
+		{5, "aa aä", "aa aä"},
+		{4, "aa aä", "aa\naä"},
+	}
+
+	for _, test := range cases {
+		got := Wrap(test.text, test.limit)
+		if got != test.want {
+			t.Errorf("Wrap(%q, %d) = %q want %q", test.text, test.limit, got, test.want)
+		}
+	}
+}
