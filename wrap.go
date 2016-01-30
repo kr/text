@@ -36,12 +36,12 @@ func WrapBytes(b []byte, lim int) []byte {
 // Wrap or WrapBytes will be sufficient and more convenient.
 //
 // WrapWords splits a list of words into lines with minimal "raggedness",
-// treating each byte as one unit, accounting for spc units between adjacent
-// words on each line, and attempting to limit lines to lim units. Raggedness
-// is the total error over all lines, where error is the square of the
-// difference of the length of the line and lim. Too-long lines (which only
-// happen when a single word is longer than lim units) have pen penalty units
-// added to the error.
+// taking into account the number of cells each UTF-8 codepoint takes on the
+// screen, accounting for spc units between adjacent words on each line, and
+// attempting to limit lines to lim units. Raggedness is the total error over
+// all lines, where error is the square of the difference of the length of the
+// line and lim. Too-long lines (which only happen when a single word is longer
+// than lim units) have pen penalty units added to the error.
 func wordLength(word []byte) int {
 	return runewidth.StringWidth(string(word))
 }
