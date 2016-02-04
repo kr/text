@@ -3,6 +3,7 @@ package text
 import (
 	"bytes"
 	"math"
+	"unicode/utf8"
 )
 
 var (
@@ -11,6 +12,32 @@ var (
 )
 
 const defaultPenalty = 1e5
+
+// Wrapper splits a list of words into lines with minimal
+// "raggedness", attempting to limit lines to MaxWidth units.
+//
+// Raggedness is the total error over all lines, where error is
+// the square of the difference of the length of the line and
+// MaxWidth. Too-long lines have an extra penalty added to the
+// error -- that is, it is much better for a line to be too short
+// than too long.
+//
+// The zero value is a valid wrapper, ready to use.
+type Wrapper struct {
+	// MaxWidth is the target for the maximum width of each line
+	// If 0, it uses 65 * Width(' ').
+	MaxWidth int
+
+	// Penalty is the extra penalty applied to the error
+	// for lines that would be too long.
+	// If 0, it uses 1e5 * Width(' ').
+	Penalty int
+
+	// Width computes the width (in arbitrary units)
+	// of the text in b.
+	// If nil, it uses utf8.RuneCount.
+	Width func(b []byte) int
+}
 
 // Wrap wraps s into a paragraph of lines of length lim, with minimal
 // raggedness.
@@ -21,34 +48,58 @@ func Wrap(s string, lim int) string {
 // WrapBytes wraps b into a paragraph of lines of length lim, with minimal
 // raggedness.
 func WrapBytes(b []byte, lim int) []byte {
+	w := new(Wrapper)
+	w.MaxWidth = lim
+	return w.Wrap(b)
+}
+
+// WrapWords is superceded by the Wrapper type.
+// It ignores spc.
+// It should not be used in new code.
+func WrapWords(words [][]byte, spc, lim, pen int) [][][]byte {
+	w := new(Wrapper)
+	w.MaxWidth = lim
+	w.Penalty = pen
+	return w.wrap(words)
+}
+
+// Wrap wraps b into a paragraph of lines of length lim, with minimal
+// raggedness.
+func (w *Wrapper) Wrap(b []byte) []byte {
 	words := bytes.Split(bytes.Replace(bytes.TrimSpace(b), nl, sp, -1), sp)
 	var lines [][]byte
-	for _, line := range WrapWords(words, 1, lim, defaultPenalty) {
+	for _, line := range w.wrap(words) {
 		lines = append(lines, bytes.Join(line, sp))
 	}
 	return bytes.Join(lines, nl)
 }
 
-// WrapWords is the low-level line-breaking algorithm, useful if you need more
-// control over the details of the text wrapping process. For most uses, either
-// Wrap or WrapBytes will be sufficient and more convenient.
-//
-// WrapWords splits a list of words into lines with minimal "raggedness",
-// treating each byte as one unit, accounting for spc units between adjacent
-// words on each line, and attempting to limit lines to lim units. Raggedness
-// is the total error over all lines, where error is the square of the
-// difference of the length of the line and lim. Too-long lines (which only
-// happen when a single word is longer than lim units) have pen penalty units
-// added to the error.
-func WrapWords(words [][]byte, spc, lim, pen int) [][][]byte {
+func (w *Wrapper) wrap(words [][]byte) [][][]byte {
 	n := len(words)
+	width := w.Width
+	if width == nil {
+		width = utf8.RuneCount
+	}
+	spc := width(sp)
+	wwid := make([]int, len(words))
+	for i, word := range words {
+		wwid[i] = width(word)
+	}
+	pen := w.Penalty
+	if pen == 0 {
+		pen = defaultPenalty * spc
+	}
+	lim := w.MaxWidth
+	if lim == 0 {
+		lim = 65 * spc
+	}
 
 	length := make([][]int, n)
 	for i := 0; i < n; i++ {
 		length[i] = make([]int, n)
-		length[i][i] = len(words[i])
+		length[i][i] = wwid[i]
 		for j := i + 1; j < n; j++ {
-			length[i][j] = length[i][j-1] + spc + len(words[j])
+			length[i][j] = length[i][j-1] + spc + wwid[j]
 		}
 	}
 
