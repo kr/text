@@ -65,7 +65,7 @@ func WrapWords(words [][]byte, spc, lim, pen int) [][][]byte {
 			for j := i + 1; j < n; j++ {
 				d := lim - length[i][j-1]
 				c := d*d + cost[j]
-				if length[i][j-1] > lim {
+				if length[i][j-1] > lim && i != (j-1) {
 					c += pen // too-long lines get a worse penalty
 				}
 				if c < cost[i] {

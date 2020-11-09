@@ -51,6 +51,7 @@ func TestWrapBug1(t *testing.T) {
 	}{
 		{4, "aaaaa", "aaaaa"},
 		{4, "a aaaaa", "a\naaaaa"},
+		{4, "overlong overlong foo", "overlong\noverlong\nfoo"},
 	}
 
 	for _, test := range cases {
