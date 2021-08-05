@@ -1,5 +1,6 @@
 This is a Go package for manipulating paragraphs of text.
 
-[![GoDoc](https://godoc.org/github.com/kr/text?status.svg)](https://godoc.org/github.com/kr/text)
+[![GoDoc](https://pkg.go.dev/badge/github.com/kr/text)](https://pkg.go.dev/github.com/kr/text)
+
 
 See https://godoc.org/github.com/kr/text for full documentation.
