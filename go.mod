@@ -1,3 +1,5 @@
-module "github.com/kr/text"
+module github.com/kr/text
 
-require "github.com/creack/pty" v1.1.9
+go 1.12
+
+require github.com/creack/pty v1.1.14

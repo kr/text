@@ -16,7 +16,7 @@ const (
 )
 
 const (
-	// Print each input line ending in a colon ':' separately.
+	// BreakOnColon Print each input line ending in a colon ':' separately.
 	BreakOnColon uint = 1 << iota
 )
 
