@@ -1,5 +1,5 @@
 module github.com/kr/text
 
-go 1.12
+go 1.13
 
-require github.com/creack/pty v1.1.17
+require github.com/creack/pty v1.1.23
