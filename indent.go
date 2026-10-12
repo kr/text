@@ -46,20 +46,26 @@ func NewIndentWriter(w io.Writer, pre ...[]byte) io.Writer {
 	}
 }
 
-// The only errors returned are from the underlying indentWriter.
+// Write returns errors from the underlying writer or io.ErrShortWrite.
 func (w *indentWriter) Write(p []byte) (n int, err error) {
 	for _, c := range p {
 		if w.bol {
 			var i int
 			i, err = w.w.Write(w.pre[w.sel][w.off:])
 			w.off += i
+			if err == nil && w.off < len(w.pre[w.sel]) {
+				err = io.ErrShortWrite
+			}
 			if err != nil {
 				return n, err
 			}
 		}
-		_, err = w.w.Write([]byte{c})
-		if err != nil {
-			return n, err
+		i, writeErr := w.w.Write([]byte{c})
+		if i == 0 {
+			if writeErr == nil {
+				writeErr = io.ErrShortWrite
+			}
+			return n, writeErr
 		}
 		n++
 		w.bol = c == '\n'
@@ -68,6 +74,9 @@ func (w *indentWriter) Write(p []byte) (n int, err error) {
 			if w.sel < len(w.pre)-1 {
 				w.sel++
 			}
+		}
+		if writeErr != nil {
+			return n, writeErr
 		}
 	}
 	return n, nil
