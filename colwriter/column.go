@@ -30,10 +30,12 @@ const (
 // The Writer assumes that all Unicode code points have the same width; this
 // may not be true in some fonts.
 type Writer struct {
-	w     io.Writer
-	buf   []byte
-	width int
-	flag  uint
+	w            io.Writer
+	buf          []byte
+	width        int
+	flag         uint
+	linelen      int
+	lastWasColon bool
 }
 
 // NewWriter allocates and initializes a new Writer writing to w.
@@ -50,21 +52,19 @@ func NewWriter(w io.Writer, width int, flag uint) *Writer {
 // Write writes p to the writer w. The only errors returned are ones
 // encountered while writing to the underlying output stream.
 func (w *Writer) Write(p []byte) (n int, err error) {
-	var linelen int
-	var lastWasColon bool
 	for i, c := range p {
 		w.buf = append(w.buf, c)
-		linelen++
+		w.linelen++
 		if c == '\t' {
 			w.buf[len(w.buf)-1] = ' '
-			for linelen%tab != 0 {
+			for w.linelen%tab != 0 {
 				w.buf = append(w.buf, ' ')
-				linelen++
+				w.linelen++
 			}
 		}
 		if w.flag&BreakOnColon != 0 && c == ':' {
-			lastWasColon = true
-		} else if lastWasColon {
+			w.lastWasColon = true
+		} else if w.lastWasColon {
 			if c == '\n' {
 				pos := bytes.LastIndex(w.buf[:len(w.buf)-1], []byte{'\n'})
 				if pos < 0 {
@@ -85,10 +85,10 @@ func (w *Writer) Write(p []byte) (n int, err error) {
 					return 0, err
 				}
 			}
-			lastWasColon = false
+			w.lastWasColon = false
 		}
 		if c == '\n' {
-			linelen = 0
+			w.linelen = 0
 		}
 	}
 	return len(p), nil
@@ -97,6 +97,8 @@ func (w *Writer) Write(p []byte) (n int, err error) {
 // Flush should be called after the last call to Write to ensure that any data
 // buffered in the Writer is written to output.
 func (w *Writer) Flush() error {
+	w.linelen = 0
+	w.lastWasColon = false
 	return w.columnate()
 }
 
